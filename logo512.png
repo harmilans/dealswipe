@@ -1,0 +1,213 @@
+import React, { useState } from 'react';
+import { Check, ChevronRight, Calendar, FileText, DollarSign, AlertCircle } from 'lucide-react';
+import { DEALS, LISTINGS, BUYERS, formatAED, DealStage } from './data';
+import { Tag, SectionLabel, AgentCard, KpiCard } from './Components';
+
+const STAGES: { id: DealStage; label: string; icon: React.ReactNode; desc: string }[] = [
+  { id: 'matched', label: 'Matched', icon: '🤝', desc: 'Both agents expressed interest' },
+  { id: 'viewing', label: 'Viewing', icon: '👁', desc: 'Property viewing scheduled/done' },
+  { id: 'offer', label: 'Offer made', icon: '💬', desc: 'Verbal or written offer submitted' },
+  { id: 'mou', label: 'MOU signed', icon: '📝', desc: 'Memorandum of understanding signed' },
+  { id: 'transfer', label: 'DLD transfer', icon: '🏛', desc: 'Title deed transferred at DLD' },
+];
+
+const stageIndex = (s: DealStage) => STAGES.findIndex(x => x.id === s);
+
+const DealCard: React.FC<{ deal: typeof DEALS[0]; onClick: () => void; active: boolean }> = ({ deal, onClick, active }) => {
+  const si = stageIndex(deal.stage);
+  return (
+    <div onClick={onClick} style={{
+      background: active ? 'rgba(201,168,76,0.04)' : 'var(--bg2)',
+      border: `1px solid ${active ? 'var(--gold)' : 'var(--border2)'}`,
+      borderRadius: 12, padding: '14px 16px', cursor: 'pointer', marginBottom: 10,
+    }}>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 10 }}>
+        <div style={{ fontSize: 24, flexShrink: 0 }}>{deal.listing.emoji}</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>{deal.listing.title}</div>
+          <div style={{ fontSize: 11, color: 'var(--text2)' }}>{formatAED(deal.listing.askingPrice)} · {deal.buyer.nationality} buyer</div>
+        </div>
+        <div style={{
+          fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 6,
+          background: deal.stage === 'transfer' ? 'var(--green-bg)' : 'var(--amber-bg)',
+          color: deal.stage === 'transfer' ? 'var(--green)' : 'var(--amber)',
+        }}>{STAGES[si].label}</div>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ display: 'flex', gap: 3 }}>
+        {STAGES.map((s, i) => (
+          <div key={s.id} style={{ flex: 1 }}>
+            <div style={{
+              height: 4, borderRadius: 2,
+              background: i <= si ? (deal.stage === 'transfer' ? 'var(--green)' : 'var(--gold)') : 'var(--bg4)',
+            }} />
+            <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 3, textAlign: 'center' }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const DealDetail: React.FC<{ deal: typeof DEALS[0] }> = ({ deal }) => {
+  const [stage, setStage] = useState<DealStage>(deal.stage);
+  const si = stageIndex(stage);
+
+  return (
+    <div style={{ animation: 'fadeUp 0.3s ease' }}>
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "'DM Serif Display', serif", marginBottom: 4 }}>
+          {deal.listing.emoji} {deal.listing.title}
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--text2)' }}>Platform fee: {formatAED(deal.platformFee)} · Due on DLD transfer</div>
+      </div>
+
+      {/* Stage tracker */}
+      <div style={{ marginBottom: 24 }}>
+        <SectionLabel>Deal progress</SectionLabel>
+        <div style={{ position: 'relative' }}>
+          {STAGES.map((s, i) => {
+            const done = i < si;
+            const active = i === si;
+            return (
+              <div key={s.id} onClick={() => setStage(s.id)} style={{
+                display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 4,
+                padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
+                background: active ? 'rgba(201,168,76,0.06)' : 'transparent',
+                border: `1px solid ${active ? 'var(--gold)' : 'transparent'}`,
+                transition: 'all 0.15s',
+              }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                  background: done ? 'var(--green-bg)' : active ? 'rgba(201,168,76,0.2)' : 'var(--bg4)',
+                  border: `1px solid ${done ? 'var(--green)' : active ? 'var(--gold)' : 'var(--border2)'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13,
+                }}>
+                  {done ? <Check size={13} color="var(--green)" /> : s.icon}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontSize: 13, fontWeight: active ? 600 : 500,
+                    color: done ? 'var(--text2)' : active ? 'var(--gold)' : 'var(--text2)',
+                  }}>{s.label}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text3)' }}>{s.desc}</div>
+                </div>
+                {active && (
+                  <div style={{ fontSize: 10, color: 'var(--gold)', fontWeight: 600, marginTop: 4 }}>CURRENT</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <button onClick={() => {
+          const next = STAGES[Math.min(si + 1, STAGES.length - 1)];
+          if (next) setStage(next.id);
+        }} style={{
+          width: '100%', marginTop: 8, padding: '10px 0', borderRadius: 8,
+          background: stage === 'transfer' ? 'var(--green-bg)' : 'var(--gold)',
+          color: stage === 'transfer' ? 'var(--green)' : '#0A0A0B',
+          fontSize: 12, fontWeight: 700,
+          border: stage === 'transfer' ? '1px solid var(--green)' : 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+        }}>
+          {stage === 'transfer' ? <><Check size={14} /> Deal closed — DLD transfer complete</> : <>Advance to next stage <ChevronRight size={14} /></>}
+        </button>
+      </div>
+
+      {/* Parties */}
+      <div style={{ marginBottom: 20 }}>
+        <SectionLabel>Parties</SectionLabel>
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 6 }}>Listing agent</div>
+          <AgentCard agent={deal.listing.agent} revealed />
+        </div>
+        <div>
+          <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 6 }}>Buyer agent</div>
+          <AgentCard agent={deal.buyer.agent} revealed />
+        </div>
+      </div>
+
+      {/* Deal KPIs */}
+      <div style={{ marginBottom: 20 }}>
+        <SectionLabel>Deal KPIs</SectionLabel>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+          <KpiCard label="Property" value={deal.listing.title} />
+          <KpiCard label="Asking price" value={formatAED(deal.listing.askingPrice)} color="var(--gold)" />
+          <KpiCard label="Buyer finance" value={deal.buyer.financeType} color={deal.buyer.financeType === 'Cash' ? 'var(--gold)' : 'var(--blue)'} />
+          <KpiCard label="Buyer budget max" value={formatAED(deal.buyer.budgetMax)} />
+          <KpiCard label="Connected on" value={deal.connectedDate} />
+          <KpiCard label="Platform fee" value={formatAED(deal.platformFee)} sub="Due at DLD transfer" />
+        </div>
+      </div>
+
+      {/* Platform fee notice */}
+      <div style={{
+        background: 'var(--amber-bg)', border: '1px solid var(--amber)', borderRadius: 10,
+        padding: '12px 14px', fontSize: 12, color: 'var(--amber)', lineHeight: 1.6,
+        display: 'flex', gap: 10,
+      }}>
+        <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 1 }} />
+        <div>
+          Platform fee of {formatAED(deal.platformFee)} is split equally — {formatAED(deal.platformFee / 2)} per agent.
+          Triggered when DLD transfer document is uploaded and verified against the public registry.
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const EmptyPipeline: React.FC = () => (
+  <div style={{ textAlign: 'center', padding: '80px 20px' }}>
+    <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
+    <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>No active deals yet</div>
+    <div style={{ fontSize: 13, color: 'var(--text2)' }}>Connect with agents in your matches tab to start deals</div>
+  </div>
+);
+
+export const PipelineView: React.FC = () => {
+  const [selectedDeal, setSelectedDeal] = useState<string | null>('d1');
+  const deal = DEALS.find(d => d.id === selectedDeal);
+
+  const stats = [
+    { label: 'Active deals', value: DEALS.length.toString() },
+    { label: 'Pipeline value', value: formatAED(DEALS.reduce((s, d) => s + d.listing.askingPrice, 0)) },
+    { label: 'Pending fees', value: formatAED(DEALS.reduce((s, d) => s + d.platformFee, 0)) },
+    { label: 'Avg match score', value: '88%' },
+  ];
+
+  return (
+    <div>
+      {/* Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 20 }}>
+        {stats.map(s => (
+          <div key={s.label} style={{ background: 'var(--bg2)', borderRadius: 10, padding: '14px 16px', border: '1px solid var(--border2)' }}>
+            <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text3)', marginBottom: 6 }}>{s.label}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, fontFamily: "'DM Mono', monospace", color: 'var(--gold)' }}>{s.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {DEALS.length === 0 ? <EmptyPipeline /> : (
+        <div style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: 20, alignItems: 'start' }}>
+          <div>
+            <SectionLabel>Active deals ({DEALS.length})</SectionLabel>
+            {DEALS.map(d => (
+              <DealCard key={d.id} deal={d} active={selectedDeal === d.id} onClick={() => setSelectedDeal(d.id)} />
+            ))}
+          </div>
+          <div style={{
+            background: 'var(--bg2)', border: '1px solid var(--border2)', borderRadius: 16,
+            padding: '20px 22px', position: 'sticky', top: 76, maxHeight: 'calc(100vh - 100px)', overflowY: 'auto',
+          }}>
+            {deal ? <DealDetail deal={deal} /> : (
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text3)' }}>
+                <div style={{ fontSize: 13 }}>Select a deal to view</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

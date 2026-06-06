@@ -1,70 +1,55 @@
-import React, { useState } from 'react';
-import { TopBar } from './Components';
-import { BuyerView } from './BuyerView';
-import { SellerView } from './SellerView';
-import { PipelineView } from './PipelineView';
-import { NetworkView, BriefsView } from './OtherViews';
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 
-type Role = 'buyer' | 'seller';
-type Tab = 'matches' | 'pipeline' | 'network' | 'briefs';
+:root {
+  --gold: #C9A84C;
+  --gold-light: #E8C97A;
+  --gold-dim: #8B6E2F;
+  --bg: #0A0A0B;
+  --bg2: #111113;
+  --bg3: #18181C;
+  --bg4: #222228;
+  --border: rgba(201,168,76,0.15);
+  --border2: rgba(201,168,76,0.08);
+  --text: #F0EEE8;
+  --text2: #9B9890;
+  --text3: #5C5A55;
+  --green: #2ECC8A;
+  --green-bg: rgba(46,204,138,0.1);
+  --red: #E05252;
+  --red-bg: rgba(224,82,82,0.1);
+  --blue: #5B8FE8;
+  --blue-bg: rgba(91,143,232,0.1);
+  --amber: #E8A93C;
+  --amber-bg: rgba(232,169,60,0.1);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+}
 
-const App: React.FC = () => {
-  const [role, setRole] = useState<Role>('buyer');
-  const [tab, setTab] = useState<Tab>('matches');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+button { font-family: 'Syne', sans-serif; cursor: pointer; border: none; outline: none; }
+input, select, textarea { font-family: 'Syne', sans-serif; outline: none; }
 
-  const handleRoleChange = (r: Role) => {
-    setRole(r);
-    setTab('matches');
-  };
-
-  return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-      <TopBar activeTab={tab} onTabChange={(t) => setTab(t as Tab)} role={role} onRoleChange={handleRoleChange} />
-
-      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '24px 24px 48px' }}>
-
-        {/* Context banner */}
-        <div style={{
-          background: 'var(--bg2)', border: '1px solid var(--border2)',
-          borderRadius: 12, padding: '10px 16px', marginBottom: 20,
-          display: 'flex', alignItems: 'center', gap: 12, fontSize: 12,
-        }}>
-          <div style={{
-            width: 6, height: 6, borderRadius: '50%',
-            background: 'var(--green)',
-            boxShadow: '0 0 8px var(--green)',
-          }} />
-          <span style={{ color: 'var(--text2)' }}>
-            {role === 'buyer'
-              ? <><span style={{ color: 'var(--text)', fontWeight: 600 }}>Buyer agent view</span> — you see listing details, property photos, and seller KPIs. Buyer client data is private.</>
-              : <><span style={{ color: 'var(--text)', fontWeight: 600 }}>Seller agent view</span> — you see buyer financials, credit score, income source, and purchase intent. Listing is Marina Gate 2.</>
-            }
-          </span>
-          <div style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text3)', fontFamily: "'DM Mono', monospace" }}>
-            RERA verified · Dubai Land Department
-          </div>
-        </div>
-
-        {/* Tab content */}
-        <div key={`${role}-${tab}`} style={{ animation: 'fadeIn 0.25s ease' }}>
-          {tab === 'matches' && role === 'buyer' && <BuyerView />}
-          {tab === 'matches' && role === 'seller' && <SellerView />}
-          {tab === 'pipeline' && <PipelineView />}
-          {tab === 'network' && <NetworkView />}
-          {tab === 'briefs' && <BriefsView role={role} />}
-        </div>
-      </main>
-
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        * { scrollbar-width: thin; scrollbar-color: var(--gold-dim) var(--bg2); }
-        button { transition: opacity 0.15s, transform 0.1s; }
-        button:hover { opacity: 0.88; }
-        button:active { transform: scale(0.97); }
-      `}</style>
-    </div>
-  );
-};
-
-export default App;
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
